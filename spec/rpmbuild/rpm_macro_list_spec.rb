@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'rpmbuild/rpm_macro_list'
 
 describe Rpmbuild::RpmMacroList do
   let(:raw_hash)  { { macro1: 'value1', macro2: 'value2' } }

@@ -1,0 +1,2 @@
+class RpmSpecError < StandardError
+end

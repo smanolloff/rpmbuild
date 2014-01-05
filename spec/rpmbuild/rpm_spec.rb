@@ -1,55 +1,46 @@
-# require 'spec_helper'
-
-require 'rpmbuild/rpm'
+require 'spec_helper'
+require 'tempfile'
 
 describe Rpmbuild::Rpm do
-  subject(:rpm) { Rpmbuild::Rpm.new }
+  before :all do
+    @file = Tempfile.new('spec_file')
+  end
 
-  let(:macros)  { { macro1: 'value1', macro2: 'value2', macro3: 'value3' } }
+  after :all do
+    @file.delete
+  end
 
-  # Note: 
-  # popen_exec! is a method of the Rpm class, 
-  # because the module was 'include'd in there.
-  # So, expect(rpm).to_receive(:popen_exec!) is correct.
+  let(:spec) { @file.path }
+  let(:rpm)  { Rpmbuild::Rpm.new(spec) }
 
-  it { should respond_to(:add_build_macros) }
+  subject { rpm }
+
   it { should respond_to(:build) }
-  it { should respond_to(:verify) }
-  it { should respond_to(:sign) }
-  it { should respond_to(:popen_exec!) }
+  its(:macros) { should be_an Rpmbuild::RpmMacroList }
 
-  it 'allows user-defined macros' do
-    expect(rpm.add_build_macros(macros)).to
-      change(rpm.build_macros).from({}).to(macros)
+  it 'sets the path to the rpm' do
+    pending 'stub the ENV[] variables and then test the destination'
   end
 
-  it 'runs rpmbuild with all the macros' do
-    rpm.add_build_macros(macros)
-    expected_args = [
-      '-ba',
-      '--define macro1 value1',
-      '--define macro2 value2',
-      '--define macro3 value3',
-      CUSTOMIZATION_SPEC
-    ]
+  it 'verifies the spec file' do
+    allow(File).to receive(:file?).with(spec).and_return(false)
 
-    expect(rpm).to receive(:popen_exec!).
-      with(command: 'rpmbuild', arguments: expected_arguments)
-
-    rpm.sign!
+    expect { Rpmbuild::Rpm.new(spec) }.
+      to raise_error(RpmSpecError, "Invalid spec file: #{spec}")
   end
 
-  it 'verifies the rpm' do
-    FileUtils.stub(:file?).with(rpm.target) { false }
-    expect(rpm.verify!).
-      to raise_error(RpmBuildError, "RPM build succeeded, but did not produce expected RPM at #{target}")
+  it 'verifies the created rpm' do
+    # TODO: mock ShellCommand's instances to always return the same
+    # string when executed (with a known 'Wrote: ...' line, i.e. known rpm)
+
+    expect(File).to receive(:file?).with(rpm.rpm).and_return(false)
+    expect(File).to receive(:file?).with(spec).and_return(true)
+
+    expect { rpm.build }.
+      to raise_error(RpmBuildError, "RPM build succeeded, but did not produce expected RPM at #{rpm.rpm}")
   end
 
-
-
-  it 'runs the sign_rpm script' do
-    expect(rpm).to receive(:popen_exec!).
-      with(command: RPM_SIGN_SCRIPT, arguments: [rpm.target])
-    rpm.sign!
+  it 'signs the rpm' do
+    pending 'somehow check if RPM is signed after build'
   end
 end
