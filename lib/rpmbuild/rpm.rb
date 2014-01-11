@@ -2,10 +2,10 @@ class Rpmbuild::Rpm
   attr_reader :rpm, :spec_file, :macros
 
   def initialize(spec_file)
-    unless File.file?(spec_file)
-      raise RpmSpecError, "Invalid spec file: #{spec_file}" 
+    unless File.readable?(spec_file)
+      raise ArgumentError, "Could not open file for reading -- #{spec_file}" 
     end
-
+    
     @macros = Rpmbuild::RpmMacroList.new
     @spec_file = spec_file
   end
