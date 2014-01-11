@@ -2,12 +2,21 @@ require 'spec_helper'
 require 'tempfile'
 
 describe Rpmbuild::Rpm do
-  let(:data_folder) { File.join(File.dirname(__FILE__), 'test_data') }
-  let(:spec) { File.join(data_folder, 'rpm_example.spec') }
-  let(:rpm) { Rpmbuild::Rpm.new(spec) }
+  before :each do
+    # Important, as rpmbuild's build path is 
+    # defined as relative to the current path.
+    Dir.chdir(test_dir)
+    FileUtils.rm_f Dir.glob(File.join(target_dir, '*'))
+  end
+
+  let(:builder)    { Rpmbuild::Rpm.new(spec) }
+  let(:test_dir)   { File.join(File.dirname(__FILE__), 'test_data') }
+  let(:target_dir) { File.join(test_dir, 'RPMS', 'noarch') }
+  let(:target)     { File.join(target_dir, 'test-1-1.noarch.rpm') }
+  let(:spec)       { File.join(test_dir, 'test.spec') }
 
 
-  subject { rpm }
+  subject { builder }
 
   its(:macros) { should be_an_instance_of(Rpmbuild::RpmMacroList) }
   its(:spec_file) { should eq(spec) }
@@ -21,23 +30,23 @@ describe Rpmbuild::Rpm do
 
   describe '#build' do
     it 'produces a new rpm' do
-      expect { rpm.build }.to change { File.exists? }
+      expect { builder.build }.
+        to change { File.exists?(target) }.from(false).to(true)
     end
 
     it 'sets the rpm path' do
-      rpm_path = '/path/to/rpm'
-      CommandResult.any_instance.stub(:success? => true, :output => "Wrote: #{rpm_path}")
-      expect(File).to receive(:file?).with(rpm_path).and_return(true)
-
-      expect { rpm.build }.to change(rpm.rpm).to(rpm_path)
+      expect { builder.build }.to change { builder.rpm }.to(target)
     end
 
     it 'raises if the rpm is not created' do
       rpm_path = '/path/to/rpm'
-      CommandResult.any_instance.stub(:success? => true, :output => "Wrote: #{rpm_path}")
+      CommandResult.any_instance.stub(
+        :success? => true, 
+        :output => "Wrote: #{rpm_path}"
+      )
 
-      expect { rpm.build }.
-        to raise_error(RpmBuildError, "RPM build succeeded, but did not produce expected RPM at #{rpm.rpm}")
+      expect { builder.build }.
+        to raise_error(RpmBuildError, "RPM build succeeded, but did not produce expected RPM at #{builder.rpm}")
     end
   end
 

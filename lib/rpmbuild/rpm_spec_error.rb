@@ -1,2 +1,0 @@
-class RpmSpecError < StandardError
-end

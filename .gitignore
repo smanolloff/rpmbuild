@@ -15,3 +15,7 @@ spec/reports
 test/tmp
 test/version_tmp
 tmp
+
+spec/rpmbuild/test_data/RPMS
+spec/rpmbuild/test_data/BUILD
+spec/rpmbuild/test_data/BUILDROOT

@@ -6,24 +6,24 @@
 %define _sourcedir    %{_topdir}/SOURCES
 %define _srcrpmdir    %{_topdir}/SRPMS
 
+%(%{__mkdir} -p %{_builddir} %{_rpmdir})
+
 # The macro in the Name will change it if defined
 # Handy for testing if macros are actually being defined
-Name: rpm_example%{?name_macro:_with_macro}
+Name: test%{?name_macro:_with_name_macro}
 Group: no_group
-Version: 1.2.3
-Release: 1%{?dist}
+Version: 1
+Release: 1
 Summary: Test RPM for RSpec tests
 License: no_license
 BuildArch: noarch
-
-#Source0: no_source
 
 %description
 No description
 %prep
 %build
 %install
-echo %kur
+
 # This line intentionally imitates the output of a successful rpmbuild
 # It will test whether the method is getting confused by such outputs
 %{?confusion_macro:echo "Wrote: /something/in/the/process"}
