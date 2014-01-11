@@ -1,2 +1,0 @@
-class RpmBuildError < StandardError
-end
