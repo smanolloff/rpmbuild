@@ -1,4 +1,5 @@
 require "rpmbuild/version"
+require 'shell_exec'
 
 module Rpmbuild
   # Your code goes here...

@@ -1,5 +1,5 @@
 # Stub the default directories
-%define _topdir       %(pwd)/test_data
+%define _topdir       %(pwd)/spec/rpmbuild/test_data
 %define _builddir     %{_topdir}/BUILD
 %define _buildrootdir %{_topdir}/BUILDROOT
 %define _rpmdir       %{_topdir}/RPMS
@@ -10,10 +10,11 @@
 
 # The macro in the Name will change it if defined
 # Handy for testing if macros are actually being defined
-Name: test%{?name_macro:_with_name_macro}
+Name: test%{?name_macro:_with_macro}
 Group: no_group
-Version: 1
-Release: 1
+#Version: 1
+Version: 1.
+#Release: r#1
 Summary: Test RPM for RSpec tests
 License: no_license
 BuildArch: noarch

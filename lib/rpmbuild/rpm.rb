@@ -1,5 +1,5 @@
 class Rpmbuild::Rpm
-  attr_reader :rpm, :spec_file, :macros
+  attr_reader :rpm, :spec_file, :macros, :version, :release
 
   def initialize(spec_file)
     unless File.readable?(spec_file)
@@ -8,6 +8,25 @@ class Rpmbuild::Rpm
     
     @macros = Rpmbuild::RpmMacroList.new
     @spec_file = spec_file
+
+    parse_spec
+  end
+
+  def parse_spec
+    content = File.read(@spec_file)
+    version_pattern = /Version:([^-~\/\n#]+)/
+    release_pattern = /Release:([^-~\/\n#]+)/
+
+    get_tag = lambda do |string, field|
+      string.match(/#{field}:([^-~\/\n#]+)/).captures[0].strip
+    end
+
+    begin
+      @version = get_tag.call(content, "Version")
+      @release = get_tag.call(content, "Release")
+    rescue
+      raise RpmSpecError, "Could not parse spec file"
+    end
   end
 
   def build
