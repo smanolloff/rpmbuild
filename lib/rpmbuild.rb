@@ -1,9 +1,9 @@
 require "rpmbuild/version"
-require 'shell_exec'
+require 'pty'
+require 'expect'
+require 'shell_cmd'
 
-module Rpmbuild
-  # Your code goes here...
-end
+Rpmbuild = Module.new
 
 require 'rpmbuild/errors'
 require 'rpmbuild/rpm'

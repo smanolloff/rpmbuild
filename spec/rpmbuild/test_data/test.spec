@@ -12,22 +12,21 @@
 # Handy for testing if macros are actually being defined
 Name: test%{?name_macro:_with_macro}
 Group: no_group
-#Version: 1
-Version: 1.
-#Release: r#1
+#Version: 2
+# Release: r2
+Release: r1
+Version: 1
 Summary: Test RPM for RSpec tests
 License: no_license
 BuildArch: noarch
 
 %description
 No description
-%prep
-%build
 %install
 
 # This line intentionally imitates the output of a successful rpmbuild
 # It will test whether the method is getting confused by such outputs
-%{?confusion_macro:echo "Wrote: /something/in/the/process"}
+echo "Wrote: /something/in/the/process"
 
 # This line intentionally imitates error in the rpmbuild process
 # It will test whether the method is correctly reporting the failure

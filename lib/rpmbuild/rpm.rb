@@ -8,17 +8,14 @@ class Rpmbuild::Rpm
     
     @macros = Rpmbuild::RpmMacroList.new
     @spec_file = spec_file
-
+    @built = false
     parse_spec
   end
 
   def parse_spec
-    content = File.read(@spec_file)
-    version_pattern = /Version:([^-~\/\n#]+)/
-    release_pattern = /Release:([^-~\/\n#]+)/
-
+    content = File.read(spec_file)
     get_tag = lambda do |string, field|
-      string.match(/#{field}:([^-~\/\n#]+)/).captures[0].strip
+      string.match(/^\s*#{field}:([^-~\/\n#]+)/).captures[0].strip
     end
 
     begin
@@ -29,30 +26,59 @@ class Rpmbuild::Rpm
     end
   end
 
-  def build
-    # ...
-    parse_rpm
-    verify
-    sign
-    self
+  def build(params = {})
+    cmd = ShellCmd.new(
+      'rpmbuild', 
+      '-bb', 
+      spec_file, 
+      *macros.to_cli_arguments
+    )
+
+    begin
+      cmd.execute
+      @rpm = parse_rpm_name(cmd.result.output)
+    rescue
+      # puts cmd.result.report
+      raise RpmBuildError, cmd
+    end
+
+    @built = true
+    rpm
+  end
+
+  def built?
+    @built
+  end
+
+  def sign(gpg_password)
+    raise RpmSignError, "The RPM is not built yet." unless built?
+
+    PTY.spawn("rpm --addsign #{rpm}") do |pty_out, pty_in, pid|
+      pty_in.sync = true
+      pty_out.expect(/Enter pass phrase:/, 2) do |result|
+        if result.nil?
+          raise RpmSignError, "Timeout expired (password prompt)"
+        end
+        pty_in.puts(gpg_password)
+      end
+
+      pty_out.expect(/Pass phrase is good/, 2) do |result|
+        if result.nil?
+          raise RpmSignError, "Timeout expired (password confirmation)"
+        end
+      end
+      loop { pty_out.readpartial(1024) rescue break }
+    end
   end
 
   private
-  def check_spec
-  end
-
-  def parse_rpm
-    # Output of the 'rpmbuild' command 
-    # check it for lines 'Wrote: '
-    # If more than one such line: raise!
-  end
   
-  def verify
+  def parse_rpm_name(output)
+    pattern = /Wrote: (.+)/
+    # The first group of the last match
+    output.scan(pattern).last.first
   end
 
-  def sign
-    # popen_exec!(command: RPM_SIGN_SCRIPT, arguments: [target])
-  end
 
 
 

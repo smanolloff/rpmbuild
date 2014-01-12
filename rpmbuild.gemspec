@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Rpmbuild::VERSION
   spec.authors       = ["Simeon Manolov"]
   spec.email         = ["s.manolloff@gmail.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = %q{Build RPMs with ease}
+  #spec.description   = %q{TODO: Write a longer description. Optional.}
   spec.homepage      = ""
   spec.license       = "MIT"
 

@@ -7,6 +7,7 @@ describe Rpmbuild::Rpm do
   end
 
   let(:builder)    { Rpmbuild::Rpm.new(spec) }
+  # TODO: use File.expand_path instead
   let(:test_dir)   { File.join(File.dirname(__FILE__), 'test_data') }
   let(:target_dir) { File.join(test_dir, 'RPMS', 'noarch') }
   let(:target)     { File.join(target_dir, 'test-1-r1.noarch.rpm') }
@@ -36,29 +37,13 @@ describe Rpmbuild::Rpm do
       expect { builder.build }.to change { builder.rpm }.to(target)
     end
 
-    it 'raises if the rpm is not created' do
-      rpm_path = '/wrong/rpm/path'
-      CommandResult.any_instance.stub(:output => "Wrote: #{rpm_path}")
-
-      expect { builder.build }.
-        to raise_error(RpmBuildError, "RPM build succeeded, but did not produce expected RPM at #{rpm_path}")
+    it 'returns the rpm path' do
+      expect(builder.build).to eq(target)
     end
 
-    it 'returns the result of #built?' do
-      expect(builder).to receive(:built?).with(no_args).and_return(:baboon)
-      expect(builder.build).to eq(:baboon)
-    end
-
-    context 'when the target already exists' do
-      before :each do
-        FileUtils.touch(target)
-      end
-
-      it 'raises unless forced to overwite' do
-        expect { builder.build(force: true) }.not_to raise_error
-        expect { builder.build }.
-          to raise_error(RpmBuildError, "Target RPM already exists at #{target}")
-      end
+    it 'raises if the build failed' do
+      builder.macros.add(error_macro: '1')
+      expect { builder.build }.to raise_error(ShellCmdError, "Command failed")
     end
 
     it 'honors the defined macros' do
@@ -69,59 +54,34 @@ describe Rpmbuild::Rpm do
     end
   end
 
-  describe '#rebuild' do
-    it 'calls #build(force: true)' do
-      expect(builder).to receive(:build).with(force: true).and_return(:coala)
-      builder.rebuild
-    end
-  end
-
   describe '#built?' do
-    it 'returns true if the rpmbuild succeeded' do
+    it 'is set to true if the rpmbuild succeeds' do
       expect { builder.build }.to change { builder.built? }.to(true)
     end 
-
-    it 'returns false if the rpmbuild failed' do
-      CommandResult.any_instance.stub(:success? => false)
-      expect { builder.build }.not_to change { builder.built? }
-    end
-
-    context 'after calling #rebuild' do
-      it 'is reinitialized' do
-        # Set the #built? initially to true
-        builder.build
-        CommandResult.any_instance.stub(:success? => false)
-        expect { builder.rebuild }.to change { builder.built? }.to(false)
-      end
-    end
-
-    context 'when the target already exists and the build fails' do
-      before :each do
-        FileUtils.touch(target)
-        CommandResult.any_instance.stub(:success? => false)
-        builder.build
-      end
-
-      it 'returns false' do
-        expect(builder.built?).to eq(false)
-      end
-    end
   end
 
-  describe '#sign' do
+  describe '#sign', :sign do
+    # NOTE:
+    # These tests surely fail unless:
+    #   1. The local system's GPG keyring includes a GPG key with 
+    #      email 'test@example.com' and a password '123456'
+    #   2. The GPG key is imported in the RPM database 
+    #   3. A file ~/.rpmmacros exists and contains this line:
+    #      %_gpg_name test@example.com
+
     it 'raises if the rpm is not built' do
-      expect { builder.sign }.
+      expect { builder.sign('123456') }.
         to raise_error(RpmSignError, "The RPM is not built yet.")
     end
 
     it 'signs the RPM' do
-      builder.build
-      check = ShellCommand.new('rpm', '-K', target)
+      check_unsigned = lambda do
+        ShellCmd.new('rpm', '-K', target).execute.output.match(/ pgp /).nil?
+      end
 
-      expect { builder.sign }.
-        to change { check.execute.result.chomp }.
-        from("#{target}: sha1 md5 OK").
-        to("#{target}: sha1 md5 gpg OK")
+      builder.build
+      expect { builder.sign('123456') }.
+        to change { check_unsigned.call }.from(true).to(false)
     end
   end
 
