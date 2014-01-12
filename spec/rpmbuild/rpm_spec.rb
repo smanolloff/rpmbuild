@@ -7,8 +7,7 @@ describe Rpmbuild::Rpm do
   end
 
   let(:builder)    { Rpmbuild::Rpm.new(spec) }
-  # TODO: use File.expand_path instead
-  let(:test_dir)   { File.join(File.dirname(__FILE__), 'test_data') }
+  let(:test_dir)   { File.expand_path('../test_data', __FILE__) }
   let(:target_dir) { File.join(test_dir, 'RPMS', 'noarch') }
   let(:target)     { File.join(target_dir, 'test-1-r1.noarch.rpm') }
   let(:spec)       { File.join(test_dir, 'test.spec') }
@@ -81,7 +80,12 @@ describe Rpmbuild::Rpm do
 
       builder.build
       expect { builder.sign('123456') }.
-        to change { check_unsigned.call }.from(true).to(false)
+        to change { check_unsigned.call }.to(false)
+    end
+
+    it 'returns the RPM' do
+      builder.build
+      expect(builder.sign('123456')).to be_an_instance_of(Rpmbuild::Rpm)
     end
   end
 

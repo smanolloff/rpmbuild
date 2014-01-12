@@ -69,6 +69,8 @@ class Rpmbuild::Rpm
       end
       loop { pty_out.readpartial(1024) rescue break }
     end
+
+    self
   end
 
   private

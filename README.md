@@ -18,7 +18,16 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+    require 'rpmbuild'
+
+    builder = Rpmbuild::Rpm.new('/path/to/rpm.spec')
+    builder.macros.add(macro_name: 'macro_value')
+    builder.build
+    # => "/home/user/rpmbuild/RPMS/noarch/rpm-1-r1.noarch.rpm"
+
+    builder.sign
+    # => #<Rpmbuild::Rpm:0x00000004e463b8>
+
 
 ## Contributing
 
