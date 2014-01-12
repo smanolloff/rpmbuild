@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'tempfile'
 
+
 describe Rpmbuild::Rpm do
   before :each do
     FileUtils.rm Dir.glob(File.join(target_dir, '*'))

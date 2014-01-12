@@ -3,12 +3,12 @@ require 'spec_helper'
 describe Rpmbuild::RpmMacroList do
   subject(:macro_list) { Rpmbuild::RpmMacroList.new(macro1: 'value1') }
 
-  its(:class) { should be < Hash }
+  its(:class) { should be < HashWithIndifferentAccess }
 
   describe '.new' do
     it 'also accepts more than 1 macro' do
       list = Rpmbuild::RpmMacroList.new(macro1: 'value1', macro2: 'value2')
-      expect(list).to eq( { macro1: 'value1', macro2: 'value2' } )
+      expect(list).to eq( { 'macro1' => 'value1', 'macro2' => 'value2' } )
     end
   end
 
@@ -17,14 +17,15 @@ describe Rpmbuild::RpmMacroList do
       empty_list = Rpmbuild::RpmMacroList.new
 
       expect { empty_list.add(macro1: 'value1') }.
-        to change { empty_list }.to( { macro1: 'value1' } )
+        to change { empty_list }.to( { 'macro1' => 'value1' } )
     end
 
     it 'also accepts more than 1 macro' do
       empty_list = Rpmbuild::RpmMacroList.new
 
       expect { empty_list.add(macro1: 'value1', macro2: 'value2') }.
-        to change { empty_list }.to( { macro1: 'value1', macro2: 'value2' } )
+        to change { empty_list }.
+        to( { 'macro1' => 'value1', 'macro2' => 'value2' } )
     end
   end
 
