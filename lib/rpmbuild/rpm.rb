@@ -71,6 +71,8 @@ class Rpmbuild::Rpm
     end
 
     self
+  rescue Errno::EIO => e
+    raise RpmSignError, e.message
   end
 
   private
