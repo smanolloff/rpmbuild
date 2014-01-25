@@ -61,10 +61,8 @@ describe Rpmbuild::Rpm do
   end
 
   describe '#sign', :sign do
-    # NOTE:
-    # These tests surely fail unless:
-    #   - The TESTER-GPG-KEY key located in spec/rpmbuild/test_data is
-    #     imported in the RPM database
+    # These tests use a GPG keyring located in spec/rpmbuild/test_data/.gnupg
+    # This should allow the sign tests to pass on other systems also
 
     it 'raises if the rpm is not built' do
       expect { builder.sign('123456') }.
