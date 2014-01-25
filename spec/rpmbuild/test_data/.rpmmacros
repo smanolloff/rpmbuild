@@ -1,0 +1,3 @@
+%_topdir %(echo $HOME)/rpmbuild
+%_gpg_name test@example.com
+

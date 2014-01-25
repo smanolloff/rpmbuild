@@ -3,9 +3,9 @@ class Rpmbuild::Rpm
 
   def initialize(spec_file)
     unless File.readable?(spec_file)
-      raise ArgumentError, "Could not open file for reading -- #{spec_file}" 
+      raise ArgumentError, "Could not open file for reading -- #{spec_file}"
     end
-    
+
     @macros = Rpmbuild::RpmMacroList.new
     @spec_file = spec_file
     @built = false
@@ -28,9 +28,9 @@ class Rpmbuild::Rpm
 
   def build(params = {})
     cmd = ShellCmd.new(
-      'rpmbuild', 
-      '-bb', 
-      spec_file, 
+      'rpmbuild',
+      '-bb',
+      spec_file,
       *macros.to_cli_arguments
     )
 
@@ -76,7 +76,7 @@ class Rpmbuild::Rpm
   end
 
   private
-  
+
   def parse_rpm_name(output)
     pattern = /Wrote: (.+)/
     # The first group of the last match

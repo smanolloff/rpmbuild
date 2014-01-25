@@ -63,11 +63,8 @@ describe Rpmbuild::Rpm do
   describe '#sign', :sign do
     # NOTE:
     # These tests surely fail unless:
-    #   1. The local system's GPG keyring includes a GPG key with 
-    #      email 'test@example.com' and a password '123456'
-    #   2. The GPG key is imported in the RPM database 
-    #   3. A file ~/.rpmmacros exists and contains this line:
-    #      %_gpg_name test@example.com
+    #   - The TESTER-GPG-KEY key located in spec/rpmbuild/test_data is
+    #     imported in the RPM database
 
     it 'raises if the rpm is not built' do
       expect { builder.sign('123456') }.
@@ -75,6 +72,9 @@ describe Rpmbuild::Rpm do
     end
 
     it 'signs the RPM' do
+      # GPG information is read from $HOME/.gnupg
+      ENV['HOME'] = File.expand_path('test_data', File.dirname(__FILE__))
+
       check_unsigned = lambda do
         ShellCmd.new('rpm', '-K', target).execute.output.match(/ pgp /).nil?
       end
