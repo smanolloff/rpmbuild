@@ -19,31 +19,20 @@ class Rpmbuild::Rpm
     end
 
     begin
-      @version = get_tag.call(content, "Version")
-      @release = get_tag.call(content, "Release")
+      @version = get_tag.call(content, 'Version')
+      @release = get_tag.call(content, 'Release')
     rescue
-      raise RpmSpecError, "Could not parse spec file"
+      raise RpmSpecError, 'Could not parse spec file'
     end
   end
 
   def build(params = {})
-    cmd = ShellCmd.new(
-      'rpmbuild',
-      '-bb',
-      spec_file,
-      *macros.to_cli_arguments
-    )
-
-    begin
-      cmd.execute
-      @rpm = parse_rpm_name(cmd.result.output)
-    rescue
-      # puts cmd.result.report
-      raise RpmBuildError, cmd
-    end
-
+    cmd = ShellCmd.new('rpmbuild', '-bb', spec_file, *macros.to_cli_arguments)
+    cmd.execute
     @built = true
-    rpm
+    @rpm = parse_rpm_name(cmd.result.output)
+  rescue
+    raise RpmBuildError, cmd
   end
 
   def built?
@@ -51,32 +40,28 @@ class Rpmbuild::Rpm
   end
 
   def sign(gpg_password)
-    raise RpmSignError, "The RPM is not built yet." unless built?
+    raise RpmSignError, 'The RPM is not built yet.' unless built?
 
     PTY.spawn("rpm --addsign #{rpm}") do |pty_out, pty_in, pid|
       pty_in.sync = true
       pty_out.expect(/Enter pass phrase:/, 2) do |result|
-        if result.nil?
-          raise RpmSignError, "Timeout expired (password prompt)"
-        end
+        fail RpmSignError, 'Timeout expired (password prompt)' if result.nil?
         pty_in.puts(gpg_password)
       end
 
       pty_out.expect(/Pass phrase is good/, 2) do |result|
-        if result.nil?
-          raise RpmSignError, "Timeout expired (password confirmation)"
-        end
+        fail RpmSignError, 'Timeout expired (password confirmation)' if result.nil?
       end
+
+      # Read all remaining output.
       loop { pty_out.readpartial(1024) rescue break }
     end
-
     self
   rescue Errno::EIO => e
     raise RpmSignError, e.message
   end
 
-  private
-
+private
   def parse_rpm_name(output)
     pattern = /Wrote: (.+)/
     # The first group of the last match

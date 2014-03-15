@@ -1,7 +1,6 @@
 require 'spec_helper'
 require 'tempfile'
 
-
 describe Rpmbuild::Rpm do
   before :each do
     FileUtils.rm Dir.glob(File.join(target_dir, '*'))
@@ -24,7 +23,7 @@ describe Rpmbuild::Rpm do
   describe '.new' do
     it 'expects a readable file' do
       expect { Rpmbuild::Rpm.new('/non/existing/file') }.
-        to raise_error(ArgumentError, "Could not open file for reading -- /non/existing/file")
+        to raise_error(ArgumentError, 'Could not open file for reading -- /non/existing/file')
     end
   end
 
@@ -43,7 +42,7 @@ describe Rpmbuild::Rpm do
 
     it 'raises if the build failed' do
       builder.macros.add(error_macro: '1')
-      expect { builder.build }.to raise_error(ShellCmdError, "Command failed")
+      expect { builder.build }.to raise_error(ShellCmdError, 'Command failed')
     end
 
     it 'honors the defined macros' do
@@ -62,11 +61,11 @@ describe Rpmbuild::Rpm do
 
   describe '#sign', :sign do
     # These tests use a GPG keyring located in spec/rpmbuild/test_data/.gnupg
-    # This should allow the sign tests to pass on other systems also
+    # This allows the sign tests to pass on other RPM build systems
 
     it 'raises if the rpm is not built' do
       expect { builder.sign('123456') }.
-        to raise_error(RpmSignError, "The RPM is not built yet.")
+        to raise_error(RpmSignError, 'The RPM is not built yet.')
     end
 
     it 'signs the RPM' do

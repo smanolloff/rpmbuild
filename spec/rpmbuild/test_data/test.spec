@@ -22,18 +22,20 @@ BuildArch: noarch
 
 %description
 No description
+
 %install
 
-# This line intentionally imitates the output of a successful rpmbuild
+# This line intentionally mimics the output of a successful rpmbuild
 # It will test whether the method is getting confused by such outputs
 echo "Wrote: /something/in/the/process"
 
-# This line intentionally imitates error in the rpmbuild process
+# This line intentionally mimics an error in the rpmbuild process
 # It will test whether the method is correctly reporting the failure
 %{?error_macro:exit 1}
 
 %clean
 rm -rf %{buildroot}
+
 %files
 %changelog
 

@@ -9,6 +9,6 @@ class Rpmbuild::RpmMacroList < HashWithIndifferentAccess
   end
 
   def to_cli_arguments
-    self.map { |name, value| ["--define", "#{name} #{value}"] }.flatten
+    map { |name, value| ['--define', "#{name} #{value}"] }.flatten
   end
 end
