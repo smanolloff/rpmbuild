@@ -1,6 +1,6 @@
 # Rpmbuild
 
-TODO: Write a gem description
+Build and sign RPM packages
 
 ## Installation
 
