@@ -73,12 +73,20 @@ describe Rpmbuild::Rpm do
       ENV['HOME'] = File.expand_path('test_data', File.dirname(__FILE__))
 
       check_unsigned = lambda do
-        ShellCmd.new('rpm', '-K', target).execute.output.match(/ pgp /).nil?
+        # rpm -K exits with 1 if the RPM is signed with
+        # a key that is missing from the local database
+        begin
+          res = ShellCmd.new('rpm', '-K', target).execute
+          res.output.scan(/\bpgp\b/i).any?
+        rescue ShellCmdError => e
+          res = e.command.result
+          res.exit_code == 1 && res.output.scan(/\bmissing keys\b/i).any?
+        end
       end
 
       builder.build
       expect { builder.sign('123456') }.
-        to change { check_unsigned.call }.to(false)
+        to change { check_unsigned.call }.to(true)
     end
 
     it 'returns the RPM' do
