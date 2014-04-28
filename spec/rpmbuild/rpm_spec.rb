@@ -19,6 +19,7 @@ describe Rpmbuild::Rpm do
   its(:spec_file) { should eq(spec) }
   its(:version) { should eq('1') }
   its(:release) { should eq('r1') }
+  its(:environment) { should be_an_instance_of(ShellEnvironment) }
 
   describe '.new' do
     it 'expects a readable file' do

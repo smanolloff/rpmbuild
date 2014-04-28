@@ -9,7 +9,12 @@ class Rpmbuild::Rpm
     @macros = Rpmbuild::RpmMacroList.new
     @spec_file = spec_file
     @built = false
+    @build_cmd = ShellCmd.new('rpmbuild')
     parse_spec
+  end
+
+  def environment
+    @build_cmd.environment
   end
 
   def parse_spec
@@ -27,12 +32,12 @@ class Rpmbuild::Rpm
   end
 
   def build(params = {})
-    cmd = ShellCmd.new('rpmbuild', '-bb', spec_file, *macros.to_cli_arguments)
-    cmd.execute
+    prepare_command
+    @build_cmd.execute
     @built = true
-    @rpm = parse_rpm_name(cmd.result.output)
+    @rpm = parse_rpm_name(@build_cmd.result.output)
   rescue
-    raise RpmBuildError, cmd
+    raise RpmBuildError, @build_cmd
   end
 
   def built?
@@ -66,5 +71,11 @@ private
     pattern = /Wrote: (.+)/
     # The first group of the last match
     output.scan(pattern).last.first
+  end
+
+  def prepare_command
+    unless built?
+      @build_cmd.add_arguments('-bb', spec_file, *macros.to_cli_arguments)
+    end
   end
 end

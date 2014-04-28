@@ -22,6 +22,7 @@ Or install it yourself as:
 
     builder = Rpmbuild::Rpm.new('/path/to/rpm.spec')
     builder.macros.add(macro_name: 'macro_value')
+    builder.environment.set('HOME' => '/tmp')
     builder.build
     # => "/home/user/rpmbuild/RPMS/noarch/rpm-1-r1.noarch.rpm"
 
