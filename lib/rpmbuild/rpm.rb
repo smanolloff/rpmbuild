@@ -47,7 +47,7 @@ class Rpmbuild::Rpm
   def sign(gpg_password)
     raise RpmSignError, 'The RPM is not built yet.' unless built?
 
-    PTY.spawn("#{environment_cli} rpm --addsign #{rpm}") do |pty_out, pty_in, pid|
+    PTY.spawn(@build_cmd.environment, "rpm --addsign #{rpm}") do |pty_out, pty_in, pid|
       pty_in.sync = true
       pty_out.expect(/Enter pass phrase:/, 2) do |result|
         fail RpmSignError, 'Timeout expired (password prompt)' if result.nil?
@@ -77,9 +77,5 @@ private
     unless built?
       @build_cmd.add_arguments('-bb', spec_file, *macros.to_cli_arguments)
     end
-  end
-
-  def environment_cli
-    @build_cmd.environment.map { |k, v| "#{k}=#{v}" }.join(' ')
   end
 end
